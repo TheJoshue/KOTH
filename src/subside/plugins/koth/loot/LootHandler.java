@@ -7,6 +7,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -67,9 +68,9 @@ public class LootHandler extends AbstractModule {
      // Make sure that nobody is viewing a loot chest
         // This is important because otherwise people could take stuff out of the viewing loot chest
         for(Player player : Bukkit.getOnlinePlayers()){
-            String title = player.getOpenInventory().getTitle();
+            Inventory inv = player.getOpenInventory().getTopInventory();
             for(Loot loot : loots){
-                if(loot.getInventory().getTitle().equalsIgnoreCase(title)){
+                if(loot.getInventory().equals(inv)) {
                     player.closeInventory();
                     break; // No need to close the players inventory more than once!
                 }

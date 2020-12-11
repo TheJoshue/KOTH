@@ -1,8 +1,10 @@
 package subside.plugins.koth.areas;
 
+import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BlockVector;
 import org.json.simple.JSONObject;
 
 import lombok.Getter;

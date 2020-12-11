@@ -58,7 +58,7 @@ public class KothHandler extends AbstractModule implements Runnable {
         loadKoths(); // Load all KoTH's
         
         // Add a repeating ASYNC scheduler for the KothHandler
-        this.taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, this, 20, 20);
+        this.taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 20, 20);
     }
     
     @Override

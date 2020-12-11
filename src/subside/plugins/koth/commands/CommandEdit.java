@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.regions.Region;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -13,7 +17,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import subside.plugins.koth.areas.Area;
 import subside.plugins.koth.areas.Koth;
@@ -83,25 +86,28 @@ public class CommandEdit extends AbstractCommand {
     
     private void area(CommandSender sender, String[] args, Koth koth) {
         if (args.length > 0) {
+            WorldEditPlugin we = (WorldEditPlugin) Bukkit.getPluginManager().getPlugin("WorldEdit");
+            Player player = (Player) sender;
             if (args[0].equalsIgnoreCase("create")) {
-                Selection selection = ((WorldEditPlugin) getPlugin().getServer().getPluginManager().getPlugin("WorldEdit")).getSelection((Player) sender);
-                if (selection != null) {
-                    if(args.length < 2){
-                        throw new CommandMessageException(Lang.COMMAND_GLOBAL_USAGE[0]+"/koth edit <koth> area create <name>");
-                    }
-                    Location min = selection.getMinimumPoint();
-                    Location max = selection.getMaximumPoint();
-                    if(koth.getArea(args[1]) != null){
-                        throw new AreaAlreadyExistException(args[1]);
-                    }
-                        
-                    Area area = new Area(args[1], min, max);
-                    koth.getAreas().add(area);
-                    getPlugin().getKothHandler().saveKoths();
-                    throw new CommandMessageException(Lang.COMMAND_EDITOR_AREA_ADDED);
-                } else {
+                Region selection;
+                try {
+                    selection = we.getSession(player).getSelection(BukkitAdapter.adapt(player.getWorld()));
+                } catch (IncompleteRegionException e) {
                     throw new CommandMessageException(Lang.COMMAND_GLOBAL_WESELECT);
                 }
+                if(args.length < 2){
+                    throw new CommandMessageException(Lang.COMMAND_GLOBAL_USAGE[0]+"/koth edit <koth> area create <name>");
+                }
+                Location min = BukkitAdapter.adapt(player.getWorld(), selection.getMinimumPoint());
+                Location max = BukkitAdapter.adapt(player.getWorld(), selection.getMaximumPoint());
+                if(koth.getArea(args[1]) != null){
+                    throw new AreaAlreadyExistException(args[1]);
+                }
+                        
+                Area area = new Area(args[1], min, max);
+                koth.getAreas().add(area);
+                getPlugin().getKothHandler().saveKoths();
+                throw new CommandMessageException(Lang.COMMAND_EDITOR_AREA_ADDED);
             } else if (args[0].equalsIgnoreCase("list")) {
                 new MessageBuilder(Lang.COMMAND_LISTS_EDITOR_AREA_TITLE).buildAndSend(sender);
                 for (Area area : koth.getAreas()) {
@@ -109,15 +115,17 @@ public class CommandEdit extends AbstractCommand {
                 }
                 return;
             } else if (args[0].equalsIgnoreCase("edit")) {
-                Selection selection = ((WorldEditPlugin) getPlugin().getServer().getPluginManager().getPlugin("WorldEdit")).getSelection((Player) sender);
-                if (selection == null) {
+                Region selection;
+                try {
+                    selection = we.getSession(player).getSelection(BukkitAdapter.adapt(player.getWorld()));
+                } catch (IncompleteRegionException e){
                     throw new CommandMessageException(Lang.COMMAND_GLOBAL_WESELECT);
                 }
                 if(args.length < 2){
                     throw new CommandMessageException(Lang.COMMAND_GLOBAL_USAGE[0]+"/koth edit <koth> area edit <name>");
                 }
-                Location min = selection.getMinimumPoint();
-                Location max = selection.getMaximumPoint();
+                Location min = BukkitAdapter.adapt(((Player)sender).getWorld(), selection.getMinimumPoint());
+                Location max = BukkitAdapter.adapt(((Player)sender).getWorld(), selection.getMaximumPoint());
                 Area area = koth.getArea(args[1]);
                 if(area == null){
                     throw new AreaNotExistException(args[1]);
